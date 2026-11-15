@@ -1,9 +1,9 @@
-
 name: Build AnimeTalk AI APK
 
 on:
   workflow_dispatch:
   push:
+    branches: [ "main", "master" ]
     paths:
       - 'AnimeTalkAI_Android_MVP.zip'
       - '.github/workflows/android.yml'
@@ -30,17 +30,21 @@ jobs:
           yes | sdkmanager --licenses
           sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
-
       - name: Extract project
         run: |
           unzip -q AnimeTalkAI_Android_MVP.zip -d appsrc
 
+      - name: Grant execute permission for gradlew
+        run: |
+          chmod +x appsrc/gradlew || true
+
       - name: Build APK
-        run: gradle -p appsrc assembleDebug
+        run: |
+          if [ -f "appsrc/gradlew" ]; then
+            cd appsrc && ./gradlew assembleDebug
+          else
+            gradle -p appsrc assembleDebug
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
