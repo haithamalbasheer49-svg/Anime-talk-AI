@@ -4,9 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main", "master" ]
-    paths:
-      - 'AnimeTalkAI_Android_MVP.zip'
-      - '.github/workflows/android.yml'
 
 jobs:
   build:
@@ -22,29 +19,17 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK
-        run: |
-          yes | sdkmanager --licenses
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
-
       - name: Extract project
         run: |
           unzip -q AnimeTalkAI_Android_MVP.zip -d appsrc
 
       - name: Grant execute permission for gradlew
         run: |
-          chmod +x appsrc/gradlew || true
+          chmod +x appsrc/gradlew
 
       - name: Build APK
         run: |
-          if [ -f "appsrc/gradlew" ]; then
-            cd appsrc && ./gradlew assembleDebug
-          else
-            gradle -p appsrc assembleDebug
-          fi
+          cd appsrc && ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
