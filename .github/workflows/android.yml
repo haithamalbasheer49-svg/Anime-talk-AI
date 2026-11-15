@@ -21,18 +21,24 @@ jobs:
 
       - name: Extract project
         run: |
+          mkdir -p appsrc
           unzip -q AnimeTalkAI_Android_MVP.zip -d appsrc
 
-      - name: Grant execute permission for gradlew
+      - name: Find and Build APK
         run: |
-          chmod +x appsrc/gradlew
-
-      - name: Build APK
-        run: |
-          cd appsrc && ./gradlew assembleDebug
+          # البحث تلقائياً عن ملف gradlew داخل المجلدات المفكوكة
+          GRADLEW_PATH=$(find appsrc -name "gradlew" -type f | head -n 1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "Error: gradlew file not found!"
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          echo "Found project directory: $PROJECT_DIR"
+          chmod +x "$GRADLEW_PATH"
+          cd "$PROJECT_DIR" && ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AnimeTalkAI-APK
-          path: appsrc/app/build/outputs/apk/debug/app-debug.apk
+          path: appsrc/**/build/outputs/apk/debug/app-debug.apk
